@@ -7,12 +7,22 @@ import Capacitor
  */
 @objc(ShareViaAirdropPlugin)
 public class ShareViaAirdropPlugin: CAPPlugin {
-    private let implementation = ShareViaAirdrop()
+    @objc func shareViaAirDrop(_ call: CAPPluginCall) {
+        let text = call.getString("text") ?? ""
+        let items: [Any] = [text]
+        let activityViewController = UIActivityViewController(activityItems: items, applicationActivities: nil)
 
-    @objc func echo(_ call: CAPPluginCall) {
-        let value = call.getString("value") ?? ""
-        call.resolve([
-            "value": implementation.echo(value)
-        ])
+        // Restrict sharing to AirDrop only
+        activityViewController.excludedActivityTypes = [
+            UIActivity.ActivityType.mail,
+            UIActivity.ActivityType.message,
+            // Add other activity types you want to exclude here
+        ]
+
+        DispatchQueue.main.async {
+            if let viewController = self.bridge?.viewController {
+                viewController.present(activityViewController, animated: true, completion: nil)
+            }
+        }
     }
 }
